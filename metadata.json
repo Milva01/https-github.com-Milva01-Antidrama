@@ -1,0 +1,10 @@
+{
+  "name": "Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: Remix: ANTIDRAMA",
+  "description": "Tu Yo Auxiliar emocional-operativo para bajar el ruido mental y recuperar claridad operativa.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

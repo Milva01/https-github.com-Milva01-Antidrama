@@ -1,0 +1,41 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents the user settings, calibration, and metrics state.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "humorLevel": { "type": "number" },
+        "pragmatismLevel": { "type": "number" },
+        "modes": { "type": "object" },
+        "metrics": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["uid", "email", "humorLevel", "pragmatismLevel", "modes", "metrics"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "Represents a single chat message in the dialog history.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sender": { "type": "string", "enum": ["user", "bot"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "sender", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Information and state configuration for each user."
+    },
+    "/users/{userId}/messages/{messageId}": {
+      "schema": "Message",
+      "description": "List of dialog messages associated with the user's chat history."
+    }
+  }
+}

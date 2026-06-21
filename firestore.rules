@@ -1,0 +1,85 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 3. Primitive definitions & hardened global helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    // 2. Validation Blueprints (The "Anti-Update-Gap")
+    function isValidUser(data, userId) {
+      return data.uid == userId
+        && data.uid == request.auth.uid
+        && data.email is string
+        && data.email.size() <= 256
+        && data.humorLevel is int
+        && data.humorLevel >= 1
+        && data.humorLevel <= 5
+        && data.pragmatismLevel is int
+        && data.pragmatismLevel >= 1
+        && data.pragmatismLevel <= 5
+        && data.modes is map
+        && data.metrics is map
+        && (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 100))
+        && data.keys().hasAll(['uid', 'email', 'humorLevel', 'pragmatismLevel', 'modes', 'metrics'])
+        && data.keys().size() <= 8;
+    }
+
+    function isValidMessage(data, messageId) {
+      return data.id == messageId
+        && data.sender is string
+        && data.sender in ['user', 'bot']
+        && data.text is string
+        && data.text.size() <= 10000
+        && data.timestamp is string
+        && data.timestamp.size() <= 100
+        && (!('radarSnapshot' in data) || data.radarSnapshot is map)
+        && (!('musicaRescate' in data) || (data.musicaRescate is string && data.musicaRescate.size() <= 1000))
+        && data.keys().hasAll(['id', 'sender', 'text', 'timestamp'])
+        && data.keys().size() <= 6;
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      // Secure list query restriction to prevent O(N) client-side scraping
+      allow list: if false;
+      
+      allow create: if isOwner(userId) && isValidId(userId) && isValidUser(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(userId) && isValidUser(incoming(), userId)
+        && incoming().diff(existing()).affectedKeys().hasOnly(['email', 'humorLevel', 'pragmatismLevel', 'modes', 'metrics', 'updatedAt']);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow get: if isOwner(userId) && isValidId(userId) && isValidId(messageId);
+        // Secure list queries (checks the parent path parameter for ownership/filters)
+        allow list: if isOwner(userId) && isValidId(userId);
+        
+        allow create: if isOwner(userId) && isValidId(userId) && isValidId(messageId) && isValidMessage(incoming(), messageId);
+        allow update: if false; // Messages are strictly immutable after creation
+        allow delete: if isOwner(userId) && isValidId(userId) && isValidId(messageId);
+      }
+    }
+  }
+}

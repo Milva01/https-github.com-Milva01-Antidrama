@@ -1,0 +1,24 @@
+{
+  "name": "ANTIDRAMA - Tu Yo Auxiliar",
+  "short_name": "ANTIDRAMA",
+  "description": "Tu Yo Auxiliar emocional-operativo para bajar el ruido mental y recuperar claridad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#2dd4bf",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
